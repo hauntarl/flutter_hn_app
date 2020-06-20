@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hn_app/utils/colors.dart';
 
 class HNLoading extends StatefulWidget {
   @override
@@ -42,7 +43,7 @@ class _HNLoadingState extends State<HNLoading> with SingleTickerProviderStateMix
         opacity: _fadeController,
         child: Icon(
           FontAwesomeIcons.hackerNewsSquare,
-          color: Theme.of(context).accentColor,
+          color: CustomColors.primaryBlack,
           size: 60.0,
         ),
       ),

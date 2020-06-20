@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import './utils/colors.dart';
 import './models/article.dart';
 import './bloc/hn_bloc.dart';
 import './widgets/hn_loading.dart';
+import './widgets/custom_tile.dart';
 
 void main() {
   final hnBloc = HackerNewsBloc();
@@ -21,7 +22,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: CustomColors.primaryColor,
+        accentColor: CustomColors.primaryColor,
+        scaffoldBackgroundColor: CustomColors.primaryColor,
+        canvasColor: CustomColors.primaryBlack,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: MyHomePage(
@@ -69,6 +73,10 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(
           widget.title,
+          style: TextStyle(
+            fontWeight: FontWeight.normal,
+            letterSpacing: 1.5,
+          ),
         ),
         centerTitle: true,
       ),
@@ -95,20 +103,23 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
-        selectedItemColor: Theme.of(context).primaryColor,
-        unselectedItemColor: Colors.black45,
+        selectedItemColor: CustomColors.primaryColor,
+        unselectedItemColor: CustomColors.primaryColor.withAlpha(128),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.trending_up),
             title: Text('Top'),
+            backgroundColor: CustomColors.primaryBlack,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.whatshot),
             title: Text('Best'),
+            backgroundColor: CustomColors.primaryBlack,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.new_releases),
             title: Text('New'),
+            backgroundColor: CustomColors.primaryBlack,
           ),
         ],
         currentIndex: _currentIndex,
@@ -123,61 +134,18 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  String displayTime(Duration duration) {
-    if (duration.inDays > 0)
-      return '${duration.inDays} day(s)';
-    else if (duration.inHours > 0)
-      return '${duration.inHours} hour(s)';
-    else if (duration.inMinutes > 0)
-      return '${duration.inMinutes} minute(s)';
-    else
-      return '${duration.inSeconds} second(s)';
-  }
-
   Widget _buildItem(Article article) {
+    if (article == null) return CustomTile();
     final time = DateTime.fromMillisecondsSinceEpoch(article.time * 1000);
     final diff = DateTime.now().difference(time);
-
-    return Padding(
-      padding: EdgeInsets.all(8.0),
-      child: ExpansionTile(
-        key: ValueKey<int>(article.id),
-        title: Text(
-          article.title,
-          style: TextStyle(
-            fontSize: 16.0,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            SizedBox(height: 10.0),
-            Text(article.by),
-            SizedBox(height: 5.0),
-            Text('${article.descendants} comment(s)'),
-          ],
-        ),
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text('${displayTime(diff)} ago      score: ${article.score}'),
-                IconButton(
-                  icon: Icon(
-                    Icons.launch,
-                    color: Colors.grey.shade700,
-                  ),
-                  onPressed: () async {
-                    if (await canLaunch(article.url)) await launch(article.url);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return CustomTile(
+      articleId: article.id,
+      articleTitle: article.title,
+      articleBy: article.by,
+      articleTime: diff,
+      articleComments: article.descendants,
+      articleScore: article.score,
+      articleUrl: article.url,
     );
   }
 }
