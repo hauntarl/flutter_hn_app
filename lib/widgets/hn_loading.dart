@@ -43,7 +43,7 @@ class _HNLoadingState extends State<HNLoading> with SingleTickerProviderStateMix
         opacity: _fadeController,
         child: Icon(
           FontAwesomeIcons.hackerNewsSquare,
-          color: CustomColors.primaryBlack,
+          color: CustomColors.primaryColor2,
           size: 60.0,
         ),
       ),

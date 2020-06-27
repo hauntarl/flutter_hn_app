@@ -6,7 +6,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../models/article.dart';
 
-enum StoriesType {
+enum StoryTypes {
   TOP,
   NEW,
   BEST,
@@ -14,36 +14,37 @@ enum StoriesType {
 
 class HackerNewsBloc {
   static const _baseUrl = 'https://hacker-news.firebaseio.com/v0/';
-  static const _stories = {
-    StoriesType.TOP: 'topstories',
-    StoriesType.BEST: 'beststories',
-    StoriesType.NEW: 'newstories',
+  static const _storyPath = {
+    StoryTypes.TOP: 'topstories',
+    StoryTypes.BEST: 'beststories',
+    StoryTypes.NEW: 'newstories',
   };
-  static final Map<StoriesType, List<int>> _articleIds = {
-    StoriesType.TOP: [],
-    StoriesType.BEST: [],
-    StoriesType.NEW: [],
+  static final Map<StoryTypes, List<int>> _articleIds = {
+    StoryTypes.TOP: [],
+    StoryTypes.BEST: [],
+    StoryTypes.NEW: [],
   };
   static final _articleCache = HashMap<int, Article>();
 
-  final _storiesTypeController = StreamController<StoriesType>();
+  final _storyController = StreamController<StoryTypes>();
   final _isLoadingSubject = BehaviorSubject<bool>();
 
-  Sink<StoriesType> get storiesType => _storiesTypeController.sink;
+  Sink<StoryTypes> get storyType => _storyController.sink;
   Stream<bool> get isLoading => _isLoadingSubject;
 
   HackerNewsBloc() {
-    _fetchArticles(StoriesType.TOP);
-    _storiesTypeController.stream.listen((type) => _fetchArticles(type));
+    _fetchArticles(StoryTypes.TOP);
+    _storyController.stream.listen((type) => _fetchArticles(type));
   }
 
-  UnmodifiableListView<Article> getArticles(StoriesType type) {
-    final ids = _articleIds[type];
-    return UnmodifiableListView<Article>(
-        ids.map((e) => _articleCache[e]).toList());
-  }
+  UnmodifiableListView<Article> getArticles(StoryTypes type) =>
+      UnmodifiableListView<Article>(
+          _articleIds[type].map((e) => _articleCache[e]).toList());
 
-  void _fetchArticles(StoriesType type) async {
+  UnmodifiableListView<Article> get getArticlesFromCache =>
+      UnmodifiableListView(_articleCache.values.toList());
+
+  void _fetchArticles(StoryTypes type) async {
     _isLoadingSubject.add(true);
     if (_articleIds[type].isEmpty)
       refreshArticles(type);
@@ -51,7 +52,7 @@ class HackerNewsBloc {
       _isLoadingSubject.add(false);
   }
 
-  Future<void> refreshArticles(StoriesType type) async {
+  Future<void> refreshArticles(StoryTypes type) async {
     final ids = await _getArticleIds(type);
     if (ids != null) {
       _articleIds[type] = ids.take(10).toList();
@@ -60,8 +61,8 @@ class HackerNewsBloc {
     _isLoadingSubject.add(false);
   }
 
-  Future<List<int>> _getArticleIds(StoriesType type) async {
-    final response = await http.get('$_baseUrl/${_stories[type]}.json');
+  Future<List<int>> _getArticleIds(StoryTypes type) async {
+    final response = await http.get('$_baseUrl/${_storyPath[type]}.json');
     if (response.statusCode / 100 == 2) return parseStories(response.body);
     return null;
   }
@@ -81,7 +82,9 @@ class HackerNewsBloc {
   }
 
   void close() {
-    _storiesTypeController.close();
+    _storyController.close();
     _isLoadingSubject.close();
   }
 }
+
+final hnBloc = HackerNewsBloc();

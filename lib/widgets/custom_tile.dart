@@ -28,18 +28,20 @@ class CustomTile extends StatefulWidget {
 
 class _CustomTileState extends State<CustomTile> {
   bool isExpanded = false;
-  Color textColor = CustomColors.primaryBlack;
+  Color textColor = CustomColors.primaryColor2;
 
   String displayTime(Duration duration) {
     if (duration == null) return 'loading';
     if (duration.inDays > 0)
-      return '${duration.inDays} day(s)';
+      return duration.inDays == 1 ? 'yesterday' : '${duration.inDays} days ago';
     else if (duration.inHours > 0)
-      return '${duration.inHours} hour(s)';
-    else if (duration.inMinutes > 0)
-      return '${duration.inMinutes} minute(s)';
+      return duration.inHours == 1
+          ? 'an hour ago'
+          : '${duration.inHours} hours ago';
     else
-      return '${duration.inSeconds} second(s)';
+      return duration.inMinutes <= 1
+          ? 'now'
+          : '${duration.inMinutes} minutes ago';
   }
 
   @override
@@ -54,34 +56,29 @@ class _CustomTileState extends State<CustomTile> {
         onExpansionChanged: (value) {
           isExpanded = value;
           setState(() => isExpanded
-              ? textColor = CustomColors.primaryColor
-              : textColor = CustomColors.primaryBlack);
+              ? textColor = CustomColors.primaryColor1
+              : textColor = CustomColors.primaryColor2);
         },
-        backgroundColor: CustomColors.primaryBlack,
+        backgroundColor: CustomColors.primaryColor2,
         key: ValueKey<int>(widget.articleId),
         title: Text(
           widget.articleTitle,
           style: TextStyle(
             color: textColor,
-            fontSize: 17.0,
+            fontSize: 20.0,
             fontWeight: FontWeight.w500,
           ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(height: 5.0),
+            SizedBox(height: 10.0),
             Text(
-              widget.articleBy,
+              '${widget.articleBy}  •  ${displayTime(widget.articleTime)}',
               style: TextStyle(
-                color: textColor.withAlpha(220),
-                letterSpacing: 1.2,
+                fontSize: 17.0,
+                color: textColor,
               ),
-            ),
-            SizedBox(height: 5.0),
-            Text(
-              '${displayTime(widget.articleTime)} ago',
-              style: TextStyle(color: textColor.withAlpha(220)),
             ),
           ],
         ),
@@ -93,12 +90,15 @@ class _CustomTileState extends State<CustomTile> {
               children: <Widget>[
                 Text(
                   '${widget.articleComments} comment(s)      score: ${widget.articleScore}',
-                  style: TextStyle(color: textColor.withAlpha(220)),
+                  style: TextStyle(
+                    color: textColor.withAlpha(220),
+                    fontSize: 16.0,
+                  ),
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.launch,
-                    color: CustomColors.primaryColor,
+                    color: CustomColors.primaryColor1,
                   ),
                   onPressed: () async {
                     if (await canLaunch(widget.articleUrl))

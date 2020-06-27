@@ -1,46 +1,36 @@
 import 'package:flutter/material.dart';
 
 import './utils/colors.dart';
-import './models/article.dart';
 import './bloc/hn_bloc.dart';
+import 'widgets/app_bar.dart';
 import './widgets/hn_loading.dart';
-import './widgets/custom_tile.dart';
+import './widgets/list_builder.dart';
 
-void main() {
-  final hnBloc = HackerNewsBloc();
-  runApp(MyApp(hnBloc));
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  final HackerNewsBloc hnbloc;
-
-  MyApp(this.hnbloc);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primaryColor: CustomColors.primaryColor,
-        accentColor: CustomColors.primaryColor,
-        scaffoldBackgroundColor: CustomColors.primaryColor,
-        canvasColor: CustomColors.primaryBlack,
+        primaryColor: CustomColors.primaryColor1,
+        accentColor: CustomColors.primaryColor1,
+        scaffoldBackgroundColor: CustomColors.primaryColor1,
+        canvasColor: CustomColors.primaryColor2,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        cursorColor: CustomColors.primaryColor1,
       ),
-      home: MyHomePage(
-        title: 'Hacker News',
-        hnBloc: hnbloc,
-      ),
+      home: MyHomePage('Hacker News'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.hnBloc}) : super(key: key);
-
   final String title;
-  final HackerNewsBloc hnBloc;
+
+  MyHomePage(this.title);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -51,18 +41,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    widget.hnBloc.close();
+    hnBloc.close();
     super.dispose();
   }
 
-  StoriesType getStoryType(int index) {
+  StoryTypes getStoryType(int index) {
     switch (index) {
       case 0:
-        return StoriesType.TOP;
+        return StoryTypes.TOP;
       case 1:
-        return StoriesType.BEST;
+        return StoryTypes.BEST;
       case 2:
-        return StoriesType.NEW;
+        return StoryTypes.NEW;
     }
     return null;
   }
@@ -70,82 +60,52 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: TextStyle(
-            fontWeight: FontWeight.normal,
-            letterSpacing: 1.5,
-          ),
-        ),
-        centerTitle: true,
+      appBar: buildAppBar(
+        context: context,
+        title: widget.title,
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          await widget.hnBloc.refreshArticles(getStoryType(_currentIndex));
-        },
+        onRefresh: () async =>
+            await hnBloc.refreshArticles(getStoryType(_currentIndex)),
         child: StreamBuilder<bool>(
-          stream: widget.hnBloc.isLoading,
+          stream: hnBloc.isLoading,
           initialData: true,
           builder: (_, snapshot) {
             if (snapshot.data) return HNLoading();
-            final articles =
-                widget.hnBloc.getArticles(getStoryType(_currentIndex));
+            final articles = hnBloc.getArticles(getStoryType(_currentIndex));
             if (articles.isEmpty) return HNLoading();
-            return ListView.builder(
-              key: ValueKey<int>(_currentIndex),
-              physics: BouncingScrollPhysics(),
-              itemCount: articles.length,
-              itemBuilder: (_, index) => _buildItem(articles[index]),
-            );
+            return ListBuilder(articles);
           },
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
-        selectedItemColor: CustomColors.primaryColor,
-        unselectedItemColor: CustomColors.primaryColor.withAlpha(128),
+        selectedItemColor: CustomColors.primaryColor1,
+        unselectedItemColor: CustomColors.primaryColor1.withAlpha(128),
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.trending_up),
             title: Text('Top'),
-            backgroundColor: CustomColors.primaryBlack,
+            backgroundColor: CustomColors.primaryColor2,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.whatshot),
             title: Text('Best'),
-            backgroundColor: CustomColors.primaryBlack,
+            backgroundColor: CustomColors.primaryColor2,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.new_releases),
             title: Text('New'),
-            backgroundColor: CustomColors.primaryBlack,
+            backgroundColor: CustomColors.primaryColor2,
           ),
         ],
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == _currentIndex) return;
-          widget.hnBloc.storiesType.add(getStoryType(index));
-          setState(() {
-            _currentIndex = index;
-          });
+          hnBloc.storyType.add(getStoryType(index));
+          setState(() => _currentIndex = index);
         },
       ),
-    );
-  }
-
-  Widget _buildItem(Article article) {
-    if (article == null) return CustomTile();
-    final time = DateTime.fromMillisecondsSinceEpoch(article.time * 1000);
-    final diff = DateTime.now().difference(time);
-    return CustomTile(
-      articleId: article.id,
-      articleTitle: article.title,
-      articleBy: article.by,
-      articleTime: diff,
-      articleComments: article.descendants,
-      articleScore: article.score,
-      articleUrl: article.url,
     );
   }
 }
