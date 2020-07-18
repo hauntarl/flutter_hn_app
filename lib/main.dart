@@ -19,7 +19,6 @@ class MyApp extends StatelessWidget {
         accentColor: CustomColors.primaryColor1,
         scaffoldBackgroundColor: CustomColors.primaryColor1,
         canvasColor: CustomColors.primaryColor2,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
         cursorColor: CustomColors.primaryColor1,
       ),
       home: MyHomePage('Hacker News'),

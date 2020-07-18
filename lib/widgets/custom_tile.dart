@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../utils/colors.dart';
 
@@ -46,6 +49,7 @@ class _CustomTileState extends State<CustomTile> {
 
   @override
   Widget build(BuildContext context) {
+    final key = ValueKey<int>(widget.articleId);
     return Padding(
       padding: EdgeInsets.all(8.0),
       child: ExpansionTile(
@@ -60,12 +64,12 @@ class _CustomTileState extends State<CustomTile> {
               : textColor = CustomColors.primaryColor2);
         },
         backgroundColor: CustomColors.primaryColor2,
-        key: ValueKey<int>(widget.articleId),
+        key: key,
         title: Text(
           widget.articleTitle,
           style: TextStyle(
             color: textColor,
-            fontSize: 20.0,
+            fontSize: 18.0,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -76,37 +80,53 @@ class _CustomTileState extends State<CustomTile> {
             Text(
               '${widget.articleBy}  •  ${displayTime(widget.articleTime)}',
               style: TextStyle(
-                fontSize: 17.0,
+                fontSize: 16.0,
                 color: textColor,
               ),
             ),
           ],
         ),
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(left: 16.0, right: 5.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  '${widget.articleComments} comment(s)      score: ${widget.articleScore}',
-                  style: TextStyle(
-                    color: textColor.withAlpha(220),
-                    fontSize: 16.0,
-                  ),
+          Column(
+            children: <Widget>[
+              Container(
+                height: 300,
+                child: WebView(
+                  key: key,
+                  initialUrl: widget.articleUrl,
+                  javascriptMode: JavascriptMode.unrestricted,
+                  gestureRecognizers: Set()
+                    ..add(Factory<OneSequenceGestureRecognizer>(
+                      () => EagerGestureRecognizer(),
+                    )),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.launch,
-                    color: CustomColors.primaryColor1,
-                  ),
-                  onPressed: () async {
-                    if (await canLaunch(widget.articleUrl))
-                      await launch(widget.articleUrl);
-                  },
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 16.0, right: 5.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      '${widget.articleComments} comment(s)      score: ${widget.articleScore}',
+                      style: TextStyle(
+                        color: textColor.withAlpha(220),
+                        fontSize: 16.0,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.launch,
+                        color: CustomColors.primaryColor1,
+                      ),
+                      onPressed: () async {
+                        if (await canLaunch(widget.articleUrl))
+                          await launch(widget.articleUrl, forceWebView: true);
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
