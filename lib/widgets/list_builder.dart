@@ -1,18 +1,18 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 
 import '../models/article.dart';
 import './custom_tile.dart';
 
 class ListBuilder extends StatelessWidget {
-  final UnmodifiableListView<Article> articles;
+  final List<Article> articles;
+  final int index;
 
-  ListBuilder(this.articles);
+  ListBuilder(this.articles, this.index);
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      key: PageStorageKey<int>(index),
       physics: BouncingScrollPhysics(),
       itemCount: articles.length,
       itemBuilder: (_, index) => _buildItem(articles[index]),

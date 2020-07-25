@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'article_search.dart';
+import './article_search.dart';
 
-PreferredSizeWidget buildAppBar({BuildContext context, String title}) => AppBar(
+PreferredSizeWidget buildAppBar({
+  BuildContext context,
+  String title,
+}) =>
+    AppBar(
       title: Text(
         title,
         style: TextStyle(

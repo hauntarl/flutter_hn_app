@@ -21,29 +21,26 @@ class Article {
     this.descendants,
   });
 
-  factory Article.fromJson(Map<String, dynamic> data) {
-    final article = Article(
-      id: data['id'],
-      type: data['type'] ?? 'null',
-      by: data['by'] ?? 'null',
-      time: data['time'] ?? DateTime.now().millisecondsSinceEpoch / 1000,
-      url: data['url'] ?? 'null',
-      score: data['score'] ?? 0,
-      title: data['title'] ?? 'null',
-      descendants: data['descendants'] ?? 0,
-    );
-    return article;
-  }
+  factory Article.fromJson(Map<String, dynamic> data) => Article(
+        id: data['id'],
+        type: data['type'] ?? 'null',
+        by: data['by'] ?? 'null',
+        time: data['time'] ?? DateTime.now().millisecondsSinceEpoch / 1000,
+        url: data['url'] ?? 'null',
+        score: data['score'] ?? 0,
+        title: data['title'] ?? 'null',
+        descendants: data['descendants'] ?? 0,
+      );
 }
 
-List<int> parseStories(String jsonString) {
-  final parsed = jsonDecode(jsonString);
-  final listOfIds = List<int>.from(parsed);
-  return listOfIds;
+List<int> parseStories(String json) {
+  final parsed = jsonDecode(json);
+  final ids = List<int>.from(parsed);
+  return ids;
 }
 
-Article parseArticle(String jsonString) {
-  final parsed = jsonDecode(jsonString);
+Article parseArticle(String json) {
+  final parsed = jsonDecode(json);
   final article = Article.fromJson(parsed);
   return article;
 }

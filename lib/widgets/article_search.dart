@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 
 import '../models/article.dart';
@@ -15,7 +13,7 @@ class ArticleSearch extends SearchDelegate<Article> {
         padding: EdgeInsets.symmetric(horizontal: 23.0),
         icon: Icon(
           Icons.clear_all,
-          color: CustomColors.primaryColor1,
+          color: HNColors.primaryColor1,
           size: 30.0,
         ),
         onPressed: () => query = '',
@@ -28,47 +26,40 @@ class ArticleSearch extends SearchDelegate<Article> {
     return IconButton(
       icon: Icon(
         Icons.arrow_back_ios,
-        color: CustomColors.primaryColor1,
+        color: HNColors.primaryColor1,
       ),
       onPressed: () => close(context, null),
     );
   }
 
   @override
-  Widget buildResults(BuildContext context) {
-    return _itemList();
-  }
+  Widget buildResults(BuildContext context) => _itemList();
 
   @override
-  Widget buildSuggestions(BuildContext context) {
-    return _itemList();
-  }
+  Widget buildSuggestions(BuildContext context) => _itemList();
 
-  Widget _itemList() => Builder(builder: (_) {
-        if (query.isEmpty)
-          return Center(
-            child: Text(
-              'Search something...',
-              style: TextStyle(
-                fontSize: 25.0,
-                color: CustomColors.primaryColor2,
-              ),
-            ),
-          );
+  Widget _itemList() {
+    return Builder(
+      builder: (_) {
+        if (query.isEmpty) return _default('Search something...');
 
         final suggestions = hnBloc.getArticlesFromCache
             .where((e) => e.title.toLowerCase().contains(query.toLowerCase()))
             .toList();
-        if (suggestions.isEmpty)
-          return Center(
-            child: Text(
-              'Couldn\'t find anything :(',
-              style: TextStyle(
-                fontSize: 25.0,
-                color: CustomColors.primaryColor2,
-              ),
-            ),
-          );
-        return ListBuilder(UnmodifiableListView(suggestions));
-      });
+        return suggestions.isEmpty
+            ? _default('Couldn\'t find anything :(')
+            : ListBuilder(suggestions, 3);
+      },
+    );
+  }
+
+  Widget _default(String text) => Center(
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 25.0,
+            color: HNColors.primaryColor2,
+          ),
+        ),
+      );
 }

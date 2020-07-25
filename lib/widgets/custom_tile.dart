@@ -6,7 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../utils/colors.dart';
 
-class CustomTile extends StatefulWidget {
+class CustomTile extends StatelessWidget {
   const CustomTile({
     this.articleId = 0,
     this.articleTitle = 'loading',
@@ -25,17 +25,13 @@ class CustomTile extends StatefulWidget {
   final int articleScore;
   final String articleUrl;
 
-  @override
-  _CustomTileState createState() => _CustomTileState();
-}
+  final background = HNColors.primaryColor1;
+  final textColor = HNColors.primaryColor2;
 
-class _CustomTileState extends State<CustomTile> {
-  bool isExpanded = false;
-  Color textColor = CustomColors.primaryColor2;
-
-  String displayTime(Duration duration) {
-    if (duration == null) return 'loading';
-    if (duration.inDays > 0)
+  static String displayTime(Duration duration) {
+    if (duration == null)
+      return 'loading';
+    else if (duration.inDays > 0)
       return duration.inDays == 1 ? 'yesterday' : '${duration.inDays} days ago';
     else if (duration.inHours > 0)
       return duration.inHours == 1
@@ -49,24 +45,18 @@ class _CustomTileState extends State<CustomTile> {
 
   @override
   Widget build(BuildContext context) {
-    final key = ValueKey<int>(widget.articleId);
+    final key = PageStorageKey<int>(articleId);
     return Padding(
       padding: EdgeInsets.all(8.0),
       child: ExpansionTile(
+        key: key,
         trailing: Icon(
-          isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+          Icons.keyboard_arrow_down,
           color: textColor,
         ),
-        onExpansionChanged: (value) {
-          isExpanded = value;
-          setState(() => isExpanded
-              ? textColor = CustomColors.primaryColor1
-              : textColor = CustomColors.primaryColor2);
-        },
-        backgroundColor: CustomColors.primaryColor2,
-        key: key,
+        backgroundColor: background,
         title: Text(
-          widget.articleTitle,
+          articleTitle,
           style: TextStyle(
             color: textColor,
             fontSize: 18.0,
@@ -78,7 +68,7 @@ class _CustomTileState extends State<CustomTile> {
           children: <Widget>[
             SizedBox(height: 10.0),
             Text(
-              '${widget.articleBy}  •  ${displayTime(widget.articleTime)}',
+              '$articleBy  •  ${displayTime(articleTime)}',
               style: TextStyle(
                 fontSize: 16.0,
                 color: textColor,
@@ -87,46 +77,53 @@ class _CustomTileState extends State<CustomTile> {
           ],
         ),
         children: <Widget>[
-          Column(
-            children: <Widget>[
-              Container(
-                height: 300,
-                child: WebView(
+          Container(
+            height: 350,
+            padding: EdgeInsets.only(top: 5),
+            child: Stack(
+              alignment: Alignment.bottomCenter,
+              children: <Widget>[
+                WebView(
                   key: key,
-                  initialUrl: widget.articleUrl,
+                  initialUrl: articleUrl,
                   javascriptMode: JavascriptMode.unrestricted,
                   gestureRecognizers: Set()
                     ..add(Factory<OneSequenceGestureRecognizer>(
                       () => EagerGestureRecognizer(),
                     )),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 16.0, right: 5.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      '${widget.articleComments} comment(s)      score: ${widget.articleScore}',
-                      style: TextStyle(
-                        color: textColor.withAlpha(220),
-                        fontSize: 16.0,
+                Container(
+                  color: background.withAlpha(192),
+                  padding: EdgeInsets.only(left: 16.0, right: 5.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        '$articleComments comment(s)      score: $articleScore',
+                        style: TextStyle(
+                          color: textColor.withAlpha(220),
+                          fontSize: 16.0,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.launch,
-                        color: CustomColors.primaryColor1,
+                      IconButton(
+                        icon: Icon(
+                          Icons.launch,
+                          color: HNColors.primaryColor2,
+                        ),
+                        onPressed: () async {
+                          if (await canLaunch(articleUrl))
+                            await launch(
+                              articleUrl,
+                              forceWebView: true,
+                              enableJavaScript: true,
+                            );
+                        },
                       ),
-                      onPressed: () async {
-                        if (await canLaunch(widget.articleUrl))
-                          await launch(widget.articleUrl, forceWebView: true);
-                      },
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
