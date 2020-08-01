@@ -41,7 +41,7 @@ class ArticleSearch extends SearchDelegate<Article> {
   Widget _itemList() {
     return Builder(
       builder: (_) {
-        if (query.isEmpty) return _default('Search something...');
+        if (query.isEmpty) return _default('type something...');
 
         final suggestions = hnBloc.getArticlesFromCache
             .where((e) => e.title.toLowerCase().contains(query.toLowerCase()))

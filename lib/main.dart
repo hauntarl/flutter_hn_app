@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hn_app/bloc/pref_bloc.dart';
 import 'package:hn_app/models/article.dart';
 
 import './utils/colors.dart';
@@ -15,14 +16,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
+      theme: ThemeData.dark().copyWith(
         primaryColor: HNColors.primaryColor1,
         accentColor: HNColors.primaryColor1,
         scaffoldBackgroundColor: HNColors.primaryColor1,
         canvasColor: HNColors.primaryColor2,
         cursorColor: HNColors.primaryColor1,
       ),
-      home: MyHomePage(),
+      home: FutureBuilder(
+        future: initSharedPreferences(),
+        builder: (_, snapshot) =>
+            snapshot.connectionState == ConnectionState.waiting
+                ? HNLoading()
+                : MyHomePage(),
+      ),
     );
   }
 }
@@ -112,6 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     hnBloc.dispose();
+    prefBloc.dispose();
     super.dispose();
   }
 }

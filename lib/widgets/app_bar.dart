@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import './article_search.dart';
+import './low_data_icon.dart';
 
 PreferredSizeWidget buildAppBar({
   BuildContext context,
@@ -15,9 +16,10 @@ PreferredSizeWidget buildAppBar({
         ),
       ),
       centerTitle: true,
+      leading: LowDataIcon(),
       actions: [
         IconButton(
-          padding: EdgeInsets.symmetric(horizontal: 23.0),
+          padding: EdgeInsets.symmetric(horizontal: 25.0),
           icon: Icon(Icons.search),
           onPressed: () => showSearch(
             context: context,

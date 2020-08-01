@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../utils/colors.dart';
+import '../bloc/pref_bloc.dart';
 
 class CustomTile extends StatelessWidget {
   const CustomTile({
@@ -46,6 +47,32 @@ class CustomTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final key = PageStorageKey<int>(articleId);
+    final bottomBar = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Text(
+          '$articleComments comment(s)      score: $articleScore',
+          style: TextStyle(
+            color: textColor.withAlpha(220),
+            fontSize: 16.0,
+          ),
+        ),
+        IconButton(
+          icon: Icon(
+            Icons.launch,
+            color: HNColors.primaryColor2,
+          ),
+          onPressed: () async {
+            if (await canLaunch(articleUrl))
+              await launch(
+                articleUrl,
+                forceWebView: true,
+                enableJavaScript: true,
+              );
+          },
+        ),
+      ],
+    );
     return Padding(
       padding: EdgeInsets.all(8.0),
       child: ExpansionTile(
@@ -77,53 +104,38 @@ class CustomTile extends StatelessWidget {
           ],
         ),
         children: <Widget>[
-          Container(
-            height: 350,
-            padding: EdgeInsets.only(top: 5),
-            child: Stack(
-              alignment: Alignment.bottomCenter,
-              children: <Widget>[
-                WebView(
-                  key: key,
-                  initialUrl: articleUrl,
-                  javascriptMode: JavascriptMode.unrestricted,
-                  gestureRecognizers: Set()
-                    ..add(Factory<OneSequenceGestureRecognizer>(
-                      () => EagerGestureRecognizer(),
-                    )),
-                ),
-                Container(
-                  color: background.withAlpha(192),
-                  padding: EdgeInsets.only(left: 16.0, right: 5.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          StreamBuilder<bool>(
+            initialData: true,
+            stream: prefBloc.currentPref,
+            builder: (_, snapshot) => snapshot.data
+                ? Stack(
+                    alignment: Alignment.bottomCenter,
                     children: <Widget>[
-                      Text(
-                        '$articleComments comment(s)      score: $articleScore',
-                        style: TextStyle(
-                          color: textColor.withAlpha(220),
-                          fontSize: 16.0,
+                      Container(
+                        height: 350,
+                        padding: EdgeInsets.only(top: 5),
+                        child: WebView(
+                          key: key,
+                          initialUrl: articleUrl,
+                          javascriptMode: JavascriptMode.unrestricted,
+                          gestureRecognizers: Set()
+                            ..add(Factory<OneSequenceGestureRecognizer>(
+                              () => EagerGestureRecognizer(),
+                            )),
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.launch,
-                          color: HNColors.primaryColor2,
-                        ),
-                        onPressed: () async {
-                          if (await canLaunch(articleUrl))
-                            await launch(
-                              articleUrl,
-                              forceWebView: true,
-                              enableJavaScript: true,
-                            );
-                        },
+                      Container(
+                        color: background.withAlpha(200),
+                        padding: EdgeInsets.only(left: 16.0, right: 5.0),
+                        child: bottomBar,
                       ),
                     ],
+                  )
+                : Container(
+                    color: background,
+                    padding: EdgeInsets.only(left: 16.0, right: 5.0),
+                    child: bottomBar,
                   ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
