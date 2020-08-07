@@ -40,41 +40,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _currentIndex = 0;
+  var _curr = 0;
 
-  static StoryTypes getStoryType(int index) {
-    switch (index) {
-      case 0:
-        return StoryTypes.TOP;
-      case 1:
-        return StoryTypes.BEST;
-      case 2:
-        return StoryTypes.NEW;
-    }
-    return null;
-  }
+  static final _story = {
+    0: [StoryTypes.TOP, hnBloc.topArticles],
+    1: [StoryTypes.BEST, hnBloc.bestArticles],
+    2: [StoryTypes.NEW, hnBloc.newArticles],
+  };
 
   @override
   Widget build(BuildContext context) {
-    final storyType = getStoryType(_currentIndex);
     return Scaffold(
       appBar: buildAppBar(context: context, title: 'Hacker News'),
       body: RefreshIndicator(
-        onRefresh: () async => await hnBloc.refreshArticles(storyType),
-        child: Builder(
-          builder: (_) {
-            switch (_currentIndex) {
-              case 0:
-                return _streamBuilder(hnBloc.topArticles);
-              case 1:
-                return _streamBuilder(hnBloc.bestArticles);
-              case 2:
-                return _streamBuilder(hnBloc.newArticles);
-              default:
-                return Container();
-            }
-          },
-        ),
+        onRefresh: () async => await hnBloc.refreshArticles(_story[_curr][0]),
+        child: _streamBuilder,
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
@@ -85,23 +65,23 @@ class _MyHomePageState extends State<MyHomePage> {
           _bottomNavigationBaritem(Icons.whatshot, 'Best'),
           _bottomNavigationBaritem(Icons.new_releases, 'New'),
         ],
-        currentIndex: _currentIndex,
+        currentIndex: _curr,
         onTap: (index) {
-          if (index == _currentIndex) return;
-          hnBloc.storyType.add(getStoryType(index));
-          setState(() => _currentIndex = index);
+          if (index == _curr) return;
+          hnBloc.storyType.add(_story[_curr][0]);
+          setState(() => _curr = index);
         },
       ),
     );
   }
 
-  StreamBuilder<List<Article>> _streamBuilder(Stream<List<Article>> stream) {
+  Widget get _streamBuilder {
     return StreamBuilder<List<Article>>(
-      stream: stream,
+      stream: _story[_curr][1],
       initialData: [],
       builder: (_, snapshot) => snapshot.data.isEmpty
           ? HNLoading()
-          : ListBuilder(snapshot.data, _currentIndex),
+          : ListBuilder(snapshot.data, _curr),
     );
   }
 

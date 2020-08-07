@@ -7,19 +7,17 @@ import './list_builder.dart';
 
 class ArticleSearch extends SearchDelegate<Article> {
   @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        padding: EdgeInsets.symmetric(horizontal: 23.0),
-        icon: Icon(
-          Icons.clear_all,
-          color: HNColors.primaryColor1,
-          size: 30.0,
+  List<Widget> buildActions(BuildContext context) => [
+        IconButton(
+          padding: EdgeInsets.symmetric(horizontal: 23.0),
+          icon: Icon(
+            Icons.clear_all,
+            color: HNColors.primaryColor1,
+            size: 30.0,
+          ),
+          onPressed: () => query = '',
         ),
-        onPressed: () => query = '',
-      )
-    ];
-  }
+      ];
 
   @override
   Widget buildLeading(BuildContext context) {
@@ -53,13 +51,15 @@ class ArticleSearch extends SearchDelegate<Article> {
     );
   }
 
-  Widget _default(String text) => Center(
-        child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 25.0,
-            color: HNColors.primaryColor2,
-          ),
+  Widget _default(String text) {
+    return Center(
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 25.0,
+          color: HNColors.primaryColor2,
         ),
-      );
+      ),
+    );
+  }
 }
