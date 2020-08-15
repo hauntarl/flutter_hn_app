@@ -61,7 +61,7 @@ class HackerNewsBloc {
     _fetchArticles(StoryTypes.TOP);
 
     // listening to the user input
-    _storyController.stream.listen((type) => _fetchArticles(type));
+    _storyController.stream.listen(_fetchArticles);
   }
 
   // returns all the articles fetched and cached from the data source
@@ -69,7 +69,7 @@ class HackerNewsBloc {
       UnmodifiableListView(_articleCache.values.toList());
 
   // fetches article only if article ids for particular story are not cached
-  void _fetchArticles(StoryTypes type) async {
+  void _fetchArticles(StoryTypes type) {
     if (_articleIds[type].isNotEmpty) return;
     _articleSubjects[type].add([]);
     refreshArticles(type);

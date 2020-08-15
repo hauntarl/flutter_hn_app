@@ -48,10 +48,16 @@ class _MyHomePageState extends State<MyHomePage> {
     2: [StoryTypes.NEW, hnBloc.newArticles],
   };
 
+  static const _title = {
+    0: 'Hacker News',
+    1: 'Best Stories',
+    2: 'New Stories',
+  };
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(context: context, title: 'Hacker News'),
+      appBar: buildAppBar(context: context, title: _title[_curr]),
       body: RefreshIndicator(
         onRefresh: () async => await hnBloc.refreshArticles(_story[_curr][0]),
         child: _streamBuilder,
@@ -68,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
         currentIndex: _curr,
         onTap: (index) {
           if (index == _curr) return;
-          hnBloc.storyType.add(_story[_curr][0]);
+          hnBloc.storyType.add(_story[index][0]);
           setState(() => _curr = index);
         },
       ),
